@@ -6,37 +6,14 @@ from .models import JVDjangoDBModel
 
 from app_api_jv.problem_domain import databaseMapper
 
-def refresh(request, id_user):
-    register = JVDjangoDBModel(id_user)
+def get_current_state(request, id_user):
+    register, _ = JVDjangoDBModel.objects.get_or_create(pk=id_user)
+    mapper = databaseMapper.DatabaseMapper(register)
     if request.method == "GET":
-        try:
-            register = JVDjangoDBModel.objects.get(pk=id_user)
-        except:
-            register.save()
-        finally:
-            mapper = databaseMapper.DatabaseMapper(register)
-            response_data = mapper.getState()
-            return JsonResponse(response_data, safe=False)
+        response_data = mapper.getState()
     elif request.method == "POST":
-        line = request.POST["line"]
-        column = request.POST["column"]
-        try:
-            register = JVDjangoDBModel.objects.get(pk=id_user)
-        except:
-            register.save()
-        finally:
-            mapper = databaseMapper.DatabaseMapper(register)
-            response_data = mapper.click_position(line, column)
-            return JsonResponse(response_data, safe=False)
-
-
-def click(request, id_user, line, column):
-    register = JVDjangoDBModel(id_user)
-    try:
-        register = JVDjangoDBModel.objects.get(pk=id_user)
-    except:
-        register.save()
-    finally:
-        mapper = databaseMapper.DatabaseMapper(register)
-        response_data = mapper.click_position(line, column)
-        return JsonResponse(response_data, safe=False)
+        a_line = int(request.POST["line"])
+        a_column = int(request.POST["column"])
+        response_data = mapper.click_position(a_line, a_column)
+    return JsonResponse(response_data, safe=False)
+    
